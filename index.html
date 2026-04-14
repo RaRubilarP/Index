@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="Vermonte">
 <meta name="theme-color" content="#0a1a0e">
 <title>Ventas Vermonte</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -123,9 +122,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:5px}
 .kpi-val{font-family:var(--font-head);font-size:28px;color:var(--text);letter-spacing:.5px;line-height:1}
 .kpi-val.green{color:var(--green)}.kpi-val.amber{color:var(--accent)}.kpi-val.red{color:var(--red)}
-.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:11px}
-.chart-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:12px}
-canvas{max-height:190px!important}
 .player-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 14px 14px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden}
 .player-hero::before{content:'⚽';position:absolute;top:-12px;right:-12px;font-size:80px;opacity:.04;line-height:1}
 .player-avatar{width:50px;height:50px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:20px;color:var(--accent);margin:0 auto 8px;border:2px solid var(--green-dim)}
@@ -180,6 +176,36 @@ canvas{max-height:190px!important}
 .btn-save-price{background:var(--green-dim);color:var(--green);border:1px solid var(--green-dim);padding:6px 11px;font-size:12px;border-radius:var(--r-sm);font-weight:700;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:all .14s}
 .btn-save-price:active{background:rgba(46,204,113,.3)}
 .btn-save-price.saved{background:rgba(46,204,113,.2);color:var(--green)}
+
+
+/* STOCK MINI LIST */
+.stock-mini-list{display:flex;flex-direction:column;gap:0}
+.stock-mini-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.stock-mini-row:last-child{border-bottom:none}
+.stock-mini-left{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.stock-mini-right{display:flex;align-items:center;gap:6px}
+.stock-pill{font-family:var(--font-head);font-size:16px;letter-spacing:.5px;min-width:28px;text-align:right}
+.stock-unit{font-size:10px;color:var(--muted);font-weight:600}
+/* SALES LOG */
+.log-filters{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.filter-input{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:var(--r-sm);padding:8px 10px;font-size:12px;font-family:var(--font-body);flex:1;min-width:110px}
+.filter-input:focus{outline:none;border-color:var(--accent)}
+.log-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:7px;position:relative}
+.log-row-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.log-row-player{font-size:13px;font-weight:700;color:var(--text)}
+.log-row-date{font-size:11px;color:var(--muted)}
+.log-row-items{font-size:12px;color:var(--muted);line-height:1.5}
+.log-row-total{font-family:var(--font-head);font-size:18px;color:var(--accent);letter-spacing:.3px}
+.log-row-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.log-paid-badge{font-size:10px;font-weight:700;color:var(--green);background:rgba(46,204,113,.13);padding:2px 7px;border-radius:5px}
+.log-pending-badge{font-size:10px;font-weight:700;color:var(--red);background:rgba(224,80,80,.12);padding:2px 7px;border-radius:5px}
+.btn-delete-sale{background:rgba(224,80,80,.1);color:var(--red);border:1px solid rgba(224,80,80,.2);padding:5px 10px;font-size:11px;border-radius:6px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all .14s}
+.btn-delete-sale:active{background:rgba(224,80,80,.25)}
+/* REPORTE MARK PAID inline */
+.btn-mark-paid{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.2);padding:5px 9px;font-size:11px;border-radius:6px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all .14s;white-space:nowrap}
+.btn-mark-paid:active{background:rgba(46,204,113,.25)}
+.log-empty{text-align:center;padding:28px;color:var(--muted);font-size:13px}
+.log-count{font-size:11px;color:var(--muted);margin-bottom:8px;text-align:right}
 
 </style>
 </head>
@@ -297,7 +323,7 @@ canvas{max-height:190px!important}
 <div id="toast"></div>
 
 <script>
-let sb=null,players=[],products=[],sales=[],saleItems=[],cart={},chartInst=null;
+let sb=null,players=[],products=[],sales=[],saleItems=[],cart={};
 const $=id=>document.getElementById(id);
 const clp=n=>'$'+Math.round(n||0).toLocaleString('es-CL');
 const todayStr=()=>new Date().toISOString().split('T')[0];
@@ -447,21 +473,18 @@ async function doSale(){
 }
 function closeModal(){$('modal').classList.remove('open');}
 function renderReporte(){
-  const rows=players.map(p=>{
+  const debtors=players.map(p=>{
     const pS=sales.filter(s=>s.player_id==p.id);
     const debt=pS.filter(s=>!s.paid).reduce((a,s)=>a+s.total,0);
-    const paid=pS.filter(s=>s.paid).reduce((a,s)=>a+s.total,0);
-    return{...p,debt,paid,hasSales:pS.length>0};
-  }).filter(p=>p.hasSales).sort((a,b)=>b.debt-a.debt);
-  const totalDebt=rows.reduce((a,p)=>a+p.debt,0);
-  const totalPaid=rows.reduce((a,p)=>a+p.paid,0);
-  const deudores=rows.filter(p=>p.debt>0);
-  const copyLines=deudores.map(p=>`${p.name}: ${clp(p.debt)}`).join('\n');
+    return{...p,debt,hasSales:pS.length>0};
+  }).filter(p=>p.hasSales&&p.debt>0).sort((a,b)=>b.debt-a.debt);
+  const totalDebt=debtors.reduce((a,p)=>a+p.debt,0);
+  const copyLines=debtors.map(p=>`${p.name}: ${clp(p.debt)}`).join('\n');
   const copyText='Vermonte - Deudas pendientes\n'+'—'.repeat(28)+'\n'+copyLines+'\n'+'—'.repeat(28)+'\nTotal: '+clp(totalDebt);
   $('reporte-body').innerHTML=`
-    <div class="kpi-grid" style="margin-bottom:14px">
-      <div class="kpi-card"><div class="kpi-label">Por Cobrar</div><div class="kpi-val amber">${clp(totalDebt)}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Recaudado</div><div class="kpi-val green">${clp(totalPaid)}</div></div>
+    <div class="kpi-card full" style="margin-bottom:14px">
+      <div class="kpi-label">Total Por Cobrar</div>
+      <div class="kpi-val amber">${clp(totalDebt)}</div>
     </div>
     <div class="section-label">Copiar para WhatsApp</div>
     <div class="card" style="padding:12px;margin-bottom:14px">
@@ -471,19 +494,21 @@ function renderReporte(){
         <span id="copy-label">Copiar listado de deudas</span>
       </button>
     </div>
-    <div class="section-label">Detalle por Jugador</div>
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="section-label">Deudores — toca para ver detalle</div>
+    ${debtors.length?`<div class="card" style="padding:0;overflow:hidden">
       <table class="rep-table">
         <thead><tr><th>Jugador</th><th>Deuda</th><th></th></tr></thead>
         <tbody>
-          ${rows.map(p=>`<tr onclick="showDetalle('${p.id}')">
-            <td class="td-name">${p.name}</td>
-            <td><span class="td-amount">${p.debt>0?clp(p.debt):''}</span> <span class="badge ${p.debt===0?'badge-ok':'badge-due'}">${p.debt===0?'Al dia':'Debe'}</span></td>
-            <td><button class="btn-wa" onclick="doWhatsApp('${p.id}',event)">WA</button></td>
+          ${debtors.map(p=>`<tr>
+            <td class="td-name" onclick="showDetalle('${p.id}')" style="cursor:pointer">${p.name}</td>
+            <td class="td-amount" onclick="showDetalle('${p.id}')" style="cursor:pointer">${clp(p.debt)}</td>
+            <td style="white-space:nowrap">
+              <button class="btn-mark-paid" onclick="markPaidInline('${p.id}')">✓ Pagado</button>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table>
-    </div>`;
+    </div>`:'<div class="log-empty">Sin deudas pendientes 🎉</div>'}`;
 }
 function copyReport(){
   const rows=players.map(p=>({...p,debt:sales.filter(s=>s.player_id==p.id&&!s.paid).reduce((a,s)=>a+s.total,0)}))
@@ -524,14 +549,18 @@ function showDetalle(pid){
   let detailHtml=dateKeys.map(date=>{
     let rows='';
     byDate[date].forEach(sale=>{
-      saleItems.filter(i=>i.sale_id==sale.id).forEach(item=>{
+      const sItems=saleItems.filter(i=>i.sale_id==sale.id);
+      sItems.forEach(item=>{
         const prod=products.find(pr=>pr.id==item.product_id);
         rows+=`<div class="detail-row">
           <span class="detail-row-name">${prod?(prod.emoji||''):''} ${prod?prod.name:'Producto'} x${item.quantity}</span>
           <span class="detail-row-price">${clp(item.unit_price*item.quantity)}</span>
         </div>`;
       });
-      if(sale.paid)rows+=`<div style="font-size:11px;color:var(--green);padding:3px 0">Pagado</div>`;
+      rows+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 6px">
+        ${sale.paid?'<span style="font-size:11px;color:var(--green);font-weight:600">✓ Pagado</span>':'<span></span>'}
+        <button class="btn-delete-sale" onclick="deleteSale('${sale.id}')">🗑 Eliminar venta</button>
+      </div>`;
     });
     return `<div style="margin-bottom:13px"><div class="date-header">${fmtDate(date)}</div>${rows}</div>`;
   }).join('');
@@ -551,34 +580,35 @@ function renderDashboard(){
   const totalSold=sales.reduce((a,s)=>a+s.total,0);
   const totalPaid=sales.filter(s=>s.paid).reduce((a,s)=>a+s.total,0);
   const totalPending=totalSold-totalPaid;
-  const byDate={};sales.forEach(s=>{byDate[s.date]=(byDate[s.date]||0)+s.total;});
-  const dates=Object.keys(byDate).sort();
-  const labels=dates.map(d=>new Date(d+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'}));
-  const amounts=dates.map(d=>byDate[d]);
-  const debtors=players.map(p=>({...p,debt:sales.filter(s=>s.player_id==p.id&&!s.paid).reduce((a,s)=>a+s.total,0)}))
-    .filter(p=>p.debt>0).sort((a,b)=>b.debt-a.debt).slice(0,5);
-  const lowStock=products.filter(p=>p.stock<=5);
   $('dashboard-body').innerHTML=`
-    <div class="kpi-grid">
+    <div class="kpi-grid" style="margin-bottom:14px">
       <div class="kpi-card full"><div class="kpi-label">Total Vendido</div><div class="kpi-val">${clp(totalSold)}</div></div>
       <div class="kpi-card"><div class="kpi-label">Recaudado</div><div class="kpi-val green">${clp(totalPaid)}</div></div>
       <div class="kpi-card"><div class="kpi-label">Por Cobrar</div><div class="kpi-val amber">${clp(totalPending)}</div></div>
     </div>
-    ${lowStock.length?'<div class="section-label">Stock Critico</div>'+lowStock.map(p=>`<div class="alert-row"><span>${p.emoji||''} ${p.name}</span><span class="alert-label">${p.stock} uds.</span></div>`).join(''):''}
-    <div class="chart-box"><div class="chart-title">Ventas por Dia</div><canvas id="bar-chart"></canvas></div>
-    ${debtors.length?`<div class="card"><div class="section-label" style="margin-bottom:10px">Top Deudores</div>
-      ${debtors.map((p,i)=>`<div class="debtor-row">
-        <div class="debtor-left"><div class="debtor-rank">${i+1}</div><div class="debtor-name">${p.name}</div></div>
-        <div class="debtor-right"><div class="debtor-amount">${clp(p.debt)}</div><button class="btn-wa" onclick="doWhatsApp('${p.id}')">WA</button></div>
-      </div>`).join('')}</div>`:''}`;
-  setTimeout(()=>{
-    if(chartInst)chartInst.destroy();
-    const ctx=$('bar-chart').getContext('2d');
-    chartInst=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:amounts,backgroundColor:'rgba(240,192,64,.75)',borderColor:'#f0c040',borderWidth:1.5,borderRadius:6}]},
-      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>clp(c.raw)}}},
-        scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6a9070',font:{size:10}}},
-                y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6a9070',font:{size:10},callback:v=>'$'+Math.round(v/1000)+'K'}}}}});
-  },60);
+    <div class="section-label">Stock Disponible</div>
+    <div class="card" style="padding:10px 13px;margin-bottom:14px">
+      <div class="stock-mini-list">
+        ${products.map(p=>{
+          const cls=p.stock<=3?'qty-low':p.stock<=8?'qty-warn':'qty-ok';
+          return `<div class="stock-mini-row">
+            <div class="stock-mini-left"><span>${p.emoji||'🛒'}</span><span>${p.name}</span></div>
+            <div class="stock-mini-right">
+              <span class="stock-pill ${cls}">${p.stock}</span>
+              <span class="stock-unit">uds.</span>
+            </div>
+          </div>`;
+        }).join('')||'<div style="color:var(--muted);font-size:13px">Sin productos</div>'}
+      </div>
+    </div>
+    <div class="section-label">Log de Ventas</div>
+    <div class="log-filters">
+      <input class="filter-input" type="date" id="filter-from" placeholder="Desde" onchange="applyLogFilter()">
+      <input class="filter-input" type="date" id="filter-to" placeholder="Hasta" onchange="applyLogFilter()">
+      <input class="filter-input" type="text" id="filter-player" placeholder="Jugador..." oninput="applyLogFilter()" style="min-width:120px">
+    </div>
+    <div id="sales-log-list"></div>`;
+  applyLogFilter();
 }
 function renderStock(){
   $('stock-body').innerHTML='<div class="section-label">Inventario</div>'+
@@ -645,7 +675,7 @@ function renderConfig(){
       <div class="debtor-left"><div class="debtor-name">${p.name}</div></div>
       <div class="debtor-right">
         <span class="debtor-amount" style="font-size:15px">${clp(p.debt)}</span>
-        <button class="btn-ghost" style="font-size:11px;color:var(--green);border-color:var(--green-dim)" onclick="markPaid('${p.id}')">Pagado</button>
+        <button class="btn-ghost" style="font-size:11px;color:var(--green);border-color:var(--green-dim)" onclick="markPaidInline('${p.id}')">Pagado</button>
       </div>
     </div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:6px 0">Sin deudas pendientes</div>';
 }
@@ -680,14 +710,103 @@ async function deleteProduct(id,name){
   if(error){toast('Error: '+error.message,true);return;}
   toast(name+' eliminado');await reload();renderProducts();renderConfig();
 }
-async function markPaid(pid){
-  if(!confirm('Marcar todas las deudas de este jugador como pagadas?'))return;
+
+
+function applyLogFilter(){
+  const from=$('filter-from')&&$('filter-from').value;
+  const to=$('filter-to')&&$('filter-to').value;
+  const playerQ=($('filter-player')&&$('filter-player').value||'').toLowerCase().trim();
+  let filtered=[...sales];
+  if(from) filtered=filtered.filter(s=>s.date>=from);
+  if(to)   filtered=filtered.filter(s=>s.date<=to);
+  if(playerQ){
+    filtered=filtered.filter(s=>{
+      const p=players.find(x=>x.id==s.player_id);
+      return p&&p.name.toLowerCase().includes(playerQ);
+    });
+  }
+  filtered.sort((a,b)=>b.date.localeCompare(a.date)||b.created_at.localeCompare(a.created_at||''));
+  renderSalesLog(filtered);
+}
+
+function renderSalesLog(filteredSales){
+  const container=$('sales-log-list');
+  if(!container) return;
+  if(!filteredSales.length){container.innerHTML='<div class="log-empty">Sin ventas en este período</div>';return;}
+  container.innerHTML='<div class="log-count">'+filteredSales.length+' venta'+(filteredSales.length!==1?'s':'')+'</div>'+
+    filteredSales.map(sale=>{
+      const player=players.find(p=>p.id==sale.player_id);
+      const items=saleItems.filter(i=>i.sale_id==sale.id);
+      const itemsStr=items.map(i=>{
+        const prod=products.find(p=>p.id==i.product_id);
+        return (prod?prod.name:'?')+' x'+i.quantity;
+      }).join(', ');
+      const d=new Date(sale.date+'T12:00:00').toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short'});
+      return `<div class="log-row">
+        <div class="log-row-header">
+          <span class="log-row-player">${player?player.name:'Jugador eliminado'}</span>
+          <span class="log-row-date">${d}</span>
+        </div>
+        <div class="log-row-items">${itemsStr||'Sin detalle'}</div>
+        <div class="log-row-footer">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="log-row-total">${clp(sale.total)}</span>
+            <span class="${sale.paid?'log-paid-badge':'log-pending-badge'}">${sale.paid?'Pagado':'Pendiente'}</span>
+          </div>
+          <button class="btn-delete-sale" onclick="deleteSale('${sale.id}')">🗑 Eliminar</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+async function deleteSale(saleId){
+  const sale=sales.find(s=>s.id==saleId);
+  if(!sale){toast('Venta no encontrada',true);return;}
+  const player=players.find(p=>p.id==sale.player_id);
+  const playerName=player?player.name:'jugador';
+  if(!confirm('Eliminar esta venta de '+playerName+' por '+clp(sale.total)+'?\nSe restaurará el stock de los productos.')) return;
+  try{
+    // Restore stock for each item
+    const items=saleItems.filter(i=>i.sale_id==saleId);
+    for(const item of items){
+      const prod=products.find(p=>p.id==item.product_id);
+      if(prod){
+        const newStock=prod.stock+item.quantity;
+        const {error:stErr}=await sb.from('products').update({stock:newStock}).eq('id',item.product_id);
+        if(stErr) throw stErr;
+        prod.stock=newStock;
+      }
+    }
+    // Delete sale items first (FK)
+    const {error:iErr}=await sb.from('sale_items').delete().eq('sale_id',saleId);
+    if(iErr) throw iErr;
+    // Delete sale
+    const {error:sErr}=await sb.from('sales').delete().eq('id',saleId);
+    if(sErr) throw sErr;
+    toast('Venta eliminada y stock restaurado');
+    await reload();
+    // Re-render whatever is active
+    const activeView=document.querySelector('.view.active');
+    if(activeView){
+      const id=activeView.id;
+      if(id==='view-dashboard') renderDashboard();
+      else if(id==='view-reporte') renderReporte();
+      else if(id==='view-stock') renderStock();
+    }
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
+async function markPaidInline(pid){
+  if(!confirm('Marcar todas las deudas de '+players.find(p=>p.id==pid)?.name+' como pagadas?')) return;
   const ids=sales.filter(s=>s.player_id==pid&&!s.paid).map(s=>s.id);
-  if(!ids.length)return;
+  if(!ids.length) return;
   const {error}=await sb.from('sales').update({paid:true}).in('id',ids);
   if(error){toast('Error: '+error.message,true);return;}
-  toast('Deuda saldada');await reload();renderConfig();
+  toast('Deuda saldada');
+  await reload();
+  renderReporte();
 }
+
 (function boot(){
   const url=localStorage.getItem('fs_sb_url'),key=localStorage.getItem('fs_sb_key');
   if(url&&key){$('sb-url').value=url;$('sb-key').value=key;$('setup-screen').classList.add('hidden');initApp(url,key);}
